@@ -1,5 +1,5 @@
 [package]
-name = "bevy-animations-manager"
+name = "bevy_animations_manager"
 version = "0.1.0"
 edition = "2021"
 

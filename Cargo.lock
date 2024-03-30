@@ -298,13 +298,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bevy-animations-manager"
-version = "0.1.0"
-dependencies = [
- "bevy",
-]
-
-[[package]]
 name = "bevy_a11y"
 version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -333,6 +326,13 @@ dependencies = [
  "bevy_time",
  "bevy_transform",
  "bevy_utils",
+]
+
+[[package]]
+name = "bevy_animations_manager"
+version = "0.1.0"
+dependencies = [
+ "bevy",
 ]
 
 [[package]]
