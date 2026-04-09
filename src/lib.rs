@@ -11,38 +11,38 @@ pub struct AnimationData {
 }
 
 #[derive(Event)]
-pub struct AnimationFrameEvent {
+pub struct AnimationFrameEvent<T> {
     pub entity: Entity,
-    pub animation: String,
+    pub animation: T,
     pub frame: usize,
 }
 
 #[derive(Event)]
-pub struct AnimationCompleteEvent {
+pub struct AnimationCompleteEvent<T> {
     pub entity: Entity,
-    pub animation: String,
+    pub animation: T,
 }
 
 #[derive(Event)]
-pub struct AnimationLoopEvent {
+pub struct AnimationLoopEvent<T> {
     pub entity: Entity,
-    pub animation: String,
+    pub animation: T,
 }
 
 #[derive(Debug, Clone)]
 struct InvalidAnimationError;
 
 #[derive(Component, Clone)]
-pub struct AnimationsManager {
+pub struct AnimationsManager<T> {
     timer: Timer,
-    pub animation_map: HashMap<String, AnimationData>,
-    pub current_animation: Option<String>,
+    pub animation_map: HashMap<T, AnimationData>,
+    pub current_animation: Option<T>,
     pub paused: bool,
     pub index: usize,
     pub looping: bool,
     pub time_scale: f64,
 }
-impl AnimationsManager {
+impl<T> AnimationsManager<T> {
     pub fn new() -> Self {
         AnimationsManager {
             paused: false,
@@ -67,20 +67,19 @@ impl AnimationsManager {
         self.timer.set_duration(Duration::from_millis(*duration_ms));
     }
 
-    pub fn load_animation<S: Into<String>>(
+    pub fn load_animation(
         &mut self,
-        new_animation: S,
+        new_animation: T,
         animation_data: AnimationData,
     ) {
         self.animation_map
-            .insert(new_animation.into(), animation_data);
+            .insert(new_animation, animation_data);
     }
 
     // Play animation from beginning
-    pub fn play<S: Into<String>>(&mut self, new_animation: S) {
-        let new_animation = new_animation.into();
+    pub fn play(&mut self, new_animation: T) {
         self.animation_map
-            .get(&new_animation)
+            .get(T)
             .expect("Can't play animation that isn't loaded!");
 
         self.current_animation = Some(new_animation);
@@ -95,9 +94,7 @@ impl AnimationsManager {
     }
 
     // Set animation if it's not already running
-    pub fn set_animation<S: Into<String>>(&mut self, new_animation: S) {
-        let new_animation = new_animation.into();
-
+    pub fn set_animation(&mut self, new_animation: T) {
         match &self.current_animation {
             Some(current_animation) => {
                 if *current_animation != new_animation {
@@ -129,16 +126,16 @@ impl Plugin for AnimationPlugin {
     }
 }
 
-fn update_animations(
-    mut ev_complete: EventWriter<AnimationCompleteEvent>,
-    mut ev_loop: EventWriter<AnimationLoopEvent>,
-    mut ev_frame: EventWriter<AnimationFrameEvent>,
+fn update_animations<T: Send + Sync + 'static>(
+    mut ev_complete: EventWriter<AnimationCompleteEvent<T>>,
+    mut ev_loop: EventWriter<AnimationLoopEvent<T>>,
+    mut ev_frame: EventWriter<AnimationFrameEvent<T>>,
     mut query: Query<(
         Entity,
         &mut Sprite,
         &mut TextureAtlas,
         &mut Handle<Image>,
-        &mut AnimationsManager,
+        &mut AnimationsManager<T>,
     )>,
     time: Res<Time>,
 ) {
